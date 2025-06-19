@@ -3,7 +3,7 @@ import 'package:tb_aufa/src/views/home_screen.dart';
 import 'package:tb_aufa/src/views/explore_screen.dart';
 import 'package:tb_aufa/src/views/saved_screen.dart';
 import 'package:tb_aufa/src/views/profile_screen.dart';
-import 'package:tb_aufa/src/views/sesarch_delegate.dart';
+import 'package:tb_aufa/src/views/search_delegate.dart';
 
 class BottomNavigationScreen extends StatefulWidget {
   const BottomNavigationScreen({Key? key}) : super(key: key);
@@ -61,7 +61,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("TB_AUFA"),
+        title: const Text("OneNews"),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -108,17 +108,10 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen>
                 icon: _buildAnimatedIcon(Icons.bookmark, 1, Colors.green),
               ),
 
-              // Home (Centered)
-              GestureDetector(
-                onTap: () => _onItemTapped(2),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Icon(Icons.home, color: Colors.white),
-                ),
+              // Home
+              IconButton(
+                onPressed: () => _onItemTapped(2),
+                icon: _buildAnimatedIcon(Icons.home, 2, Colors.orange),
               ),
 
               // Profile
