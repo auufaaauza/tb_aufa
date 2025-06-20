@@ -1,42 +1,187 @@
 import 'package:flutter/material.dart';
+import 'package:tb_aufa/src/controller/news_controller.dart';
+import 'package:tb_aufa/src/models/news_model.dart';
 
-class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({Key? key}) : super(key: key);
+class ExploreScreen extends StatefulWidget {
+  const ExploreScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Jelajah")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  final NewsService _newsService = NewsService();
+  final List<String> _categories = [
+    'Technology',
+    'Sports',
+    'Health',
+    'Business',
+    'Entertainment',
+    'Science',
+  ];
+  String _selectedCategory = 'Technology';
+  List<NewsArticle> _articles = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchArticlesByCategory();
+  }
+
+  Future<void> _fetchArticlesByCategory() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await _newsService.fetchNews(
+        "https://rest-api-berita.vercel.app/api/v1/news?category=$_selectedCategory&limit=10",
+      );
+      if (response.success) {
+        setState(() {
+          _articles = response.data.articles;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    }
+  }
+
+  Widget _buildCategoryChip(String category) {
+    return ChoiceChip(
+      label: Text(category),
+      selected: _selectedCategory == category,
+      selectedColor: Colors.blue.withValues(alpha: 0.2),
+      labelStyle: TextStyle(
+        color: _selectedCategory == category ? Colors.blue : Colors.grey[700],
+        fontWeight: FontWeight.w500,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: _selectedCategory == category
+              ? Colors.blue
+              : Colors.grey[300]!,
+        ),
+      ),
+      onSelected: (selected) {
+        setState(() {
+          _selectedCategory = category;
+          _fetchArticlesByCategory();
+        });
+      },
+    );
+  }
+
+  Widget _buildArticleItem(NewsArticle article) {
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          // Navigate to article detail
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Kategori Populer",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _buildCategoryItem("Teknologi", Icons.computer),
-            _buildCategoryItem("Olahraga", Icons.sports),
-            _buildCategoryItem("Berita", Icons.newspaper),
-            _buildCategoryItem("Kesehatan", Icons.health_and_safety),
-            _buildCategoryItem("Hiburan", Icons.movie),
-            const SizedBox(height: 24),
-            const Text(
-              "Artikel Rekomendasi",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return _buildArticleCard(
-                    "Artikel Menarik $index",
-                    "Deskripsi singkat tentang artikel $index...",
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+              child: Image.network(
+                article.imageUrl,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 180,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                ),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 180,
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   );
                 },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    article.category.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue[600],
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    article.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 12,
+                            backgroundImage: article.author.avatar.isEmpty
+                                ? const AssetImage('assets/images/avatar.png')
+                                : NetworkImage(article.author.avatar)
+                                      as ImageProvider,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            article.author.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 14,
+                            color: Colors.grey[500],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            article.readTime,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -45,39 +190,47 @@ class ExploreScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryItem(String name, IconData icon) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(name),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          // Navigasi ke halaman detail kategori
-        },
-      ),
-    );
-  }
-
-  Widget _buildArticleCard(String title, String description) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Jelajahi Berita"), elevation: 0),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
             const SizedBox(height: 8),
+            const Text(
+              "Kategori",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 50,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) =>
+                    _buildCategoryChip(_categories[index]),
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
-              description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.grey),
+              "Artikel $_selectedCategory",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _articles.isEmpty
+                  ? const Center(child: Text("Tidak ada artikel ditemukan"))
+                  : ListView.builder(
+                      itemCount: _articles.length,
+                      itemBuilder: (context, index) =>
+                          _buildArticleItem(_articles[index]),
+                    ),
             ),
           ],
         ),

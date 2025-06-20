@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:tb_aufa/src/views/create_article_screen.dart';
+import 'package:tb_aufa/src/views/edit_article_screen.dart';
 import 'package:tb_aufa/src/views/login_screen.dart';
 import 'package:tb_aufa/src/views/splash_screen.dart';
 import 'package:tb_aufa/src/views/register_screen.dart';
-import 'package:tb_aufa/src/views/profile_screen.dart';
-import 'package:tb_aufa/src/views/bottom_navigation.dart';
-import 'package:tb_aufa/src/views/edit_profile_screen.dart';
+import 'package:tb_aufa/src/views/main_screen.dart';
 import 'package:tb_aufa/src/views/article_detail_screen.dart';
 
 class AppRoutes {
@@ -14,15 +14,9 @@ class AppRoutes {
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
   static const home = '/home';
-  static const articleDetail = '/article/:id';
-  static const profile = '/profile';
-  static const explore = '/explore';
-  static const trending = '/trending';
-  static const saved = '/saved';
-  static const myArticles = '/my-articles';
-  static const createArticle = '/create-article';
-  static const editArticle = '/edit-article/:id';
-  static const editProfile = '/edit-profile';
+  static const articleDetail = '/article-detail';
+  static const createArticle = "create-edit-article";
+  static const editArticle = "/edit-article";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,18 +26,19 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case register:
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
-      case editProfile:
-        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case home:
+        return MaterialPageRoute(builder: (_) => const MainScreen());
+      case articleDetail:
+        final articleId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (_) => const BottomNavigationScreen(),
+          builder: (_) => ArticleDetailScreen(articleId: articleId),
         );
-      case '/profile':
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
-      case '/article/:id':
+      case createArticle:
+        return MaterialPageRoute(builder: (_) => CreateArticleScreen());
+      case editArticle:
+        final articleId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (_) =>
-              ArticleDetailScreen(articleId: settings.arguments as String),
+          builder: (_) => EditArticleScreen(articleId: articleId),
         );
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());

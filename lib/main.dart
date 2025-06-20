@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tb_aufa/src/configs/apps_routes.dart';
+import 'package:tb_aufa/src/controller/news_controller.dart';
 import 'package:tb_aufa/src/provider/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +11,10 @@ void main() async {
   await SharedPreferences.getInstance();
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        Provider(create: (_) => NewsService()),
+      ],
       child: MyApp(),
     ),
   );
