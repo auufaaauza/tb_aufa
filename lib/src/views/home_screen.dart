@@ -57,10 +57,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 200,
                 width: double.infinity,
                 child: (article.imageUrl ?? '').isEmpty
-                    ? const Center(
-                        child: Icon(Icons.image, size: 60, color: Colors.grey),
+                    ? Image.asset(
+                        'assets/images/default_image.png', // Pastikan path benar
+                        fit: BoxFit.cover,
                       )
-                    : Image.network(article.imageUrl!, fit: BoxFit.cover),
+                    : Image.network(
+                        article.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.error,
+                              color: Colors.red,
+                              size: 60,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
